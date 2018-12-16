@@ -2,7 +2,7 @@ package com.bmuschko.gradle.docker.tasks.image
 
 import com.bmuschko.gradle.docker.AbstractGroovyDslFunctionalTest
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.UnexpectedBuildFailure
+import org.gradle.testkit.runner.TaskOutcome
 
 class DockerCommitImageFunctionalTest extends AbstractGroovyDslFunctionalTest {
 
@@ -39,11 +39,11 @@ class DockerCommitImageFunctionalTest extends AbstractGroovyDslFunctionalTest {
         buildFile << containerStart(commitImage)
 
         when:
-        BuildResult result = build('commitImage')
+        BuildResult result = buildAndFail('commitImage')
 
         then:
-        def e = thrown(UnexpectedBuildFailure)
-        e.message.contains('No value has been specified for property \'containerId\'.')
+        result.task(':commitImage').outcome == TaskOutcome.FAILED
+        result.output.contains('No value has been specified for property \'containerId\'.')
     }
 
     def "cannot commit image with invalid container"() {
@@ -59,11 +59,11 @@ class DockerCommitImageFunctionalTest extends AbstractGroovyDslFunctionalTest {
         buildFile << containerStart(commitImage)
 
         when:
-        BuildResult result = build('commitImage')
+        BuildResult result = buildAndFail('commitImage')
 
         then:
-        def e = thrown(UnexpectedBuildFailure)
-        e.message.contains('{"message":"No such container: idonotexist"}')
+        result.task(':commitImage').outcome == TaskOutcome.FAILED
+        result.output.contains('{"message":"No such container: idonotexist"}')
     }
 
 
